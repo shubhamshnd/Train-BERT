@@ -10,8 +10,11 @@ def get_answer(question, context):
     inputs = tokenizer.encode_plus(question, context, return_tensors="pt")
     input_ids = inputs["input_ids"].tolist()[0]
 
-    text_tokens = tokenizer.convert_ids_to_tokens(input_ids)
-    answer_start_scores, answer_end_scores = model(**inputs)
+    with torch.no_grad():
+        outputs = model(**inputs)
+
+    answer_start_scores = outputs.start_logits
+    answer_end_scores = outputs.end_logits
 
     answer_start = torch.argmax(answer_start_scores)
     answer_end = torch.argmax(answer_end_scores) + 1
